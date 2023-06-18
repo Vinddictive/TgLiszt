@@ -1,4 +1,4 @@
-### GENERATE SESSION FILE ###
+### CREATE SESSION FILE ###
 from telethon.sync import TelegramClient
 
 api_id = 26892726
@@ -8,7 +8,17 @@ with TelegramClient('my_session.session', api_id, api_hash) as client:
     print("Your session file has been created successfully!")
 
 
-### GENERATE SESSION STRING ###
+### CREATE SESSION FILE WITH 2FA HANDLER
+from telethon.sync import TelegramClient
+
+api_id = 26892726
+api_hash = 'd80afce6c6f8412ce0e9d1ae5a01f8c7'
+
+client = TelegramClient('my_session.session', api_id, api_hash)
+client.start('6285722891xxx', '2FA_HERE')
+
+
+### CREATE SESSION STRING ###
 from telethon.sync import TelegramClient
 from telethon.sessions import StringSession
 
