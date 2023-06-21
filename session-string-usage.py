@@ -10,7 +10,7 @@ client = TelegramClient(StringSession(session_string), api_id, api_hash)
 
 async def send_message():
     chat = await client.get_entity('@stellarstars')
-    await client.send_message(chat, 'wkwkwkwkwkw')
+    await client.send_message(chat, 'Hello')
 
     await client.disconnect()
 
