@@ -9,10 +9,31 @@ client = TelegramClient(StringSession(session_string), api_id, api_hash)
 
 
 async def send_message():
-    chat = await client.get_entity('@stellarstars')
+    chat = await client.get_entity('@xxx')
     await client.send_message(chat, 'Hello')
 
     await client.disconnect()
+
+with client:
+    client.loop.run_until_complete(send_message())
+
+######################
+
+from telethon.sync import TelegramClient
+
+api_id = 26892726  # Replace with your API ID
+api_hash = 'd80afce6c6f8412ce0e9d1ae5a01f8c7'
+session_file = '+6281222892923.session'  # Path to your session file
+
+client = TelegramClient(session_file, api_id, api_hash)
+
+
+async def send_message():
+    chat = await client.get_entity('@xxx')
+    await client.send_message(chat, 'Hello')
+
+    await client.disconnect()
+
 
 with client:
     client.loop.run_until_complete(send_message())
