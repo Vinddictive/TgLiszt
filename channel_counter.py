@@ -2,8 +2,8 @@ from telethon.sync import TelegramClient
 from telethon.tl.types import Channel
 
 # API credentials
-api_id = 26892726
-api_hash = 'd80afce6c6f8412ce0e9d1ae5a01f8c7'
+api_id = API_ID
+api_hash = 'API_HASH'
 
 # Create a TelegramClient instance
 with TelegramClient('my_session.session', api_id, api_hash) as client:
