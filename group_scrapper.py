@@ -2,8 +2,8 @@ import json
 from telethon.sync import TelegramClient
 
 # Configure your API credentials
-api_id = 28369134
-api_hash = 'ee44f7d8d05288b83789dc5df185061d'
+api_id = API_ID
+api_hash = 'API_HASH'
 
 # Connect to Telegram
 with TelegramClient('session_name', api_id, api_hash) as client:
