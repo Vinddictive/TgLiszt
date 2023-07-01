@@ -1,39 +1,41 @@
-### CREATE SESSION FILE ###
+### TELETHON SESSION FILE ###
 from telethon.sync import TelegramClient
 
-api_id = 26892726
-api_hash = 'd80afce6c6f8412ce0e9d1ae5a01f8c7'  # Replace with your API hash
-
+api_id = API_ID
+api_hash = 'API_HASH'
 with TelegramClient('my_session.session', api_id, api_hash) as client:
     print("Your session file has been created successfully!")
 
+------------------------------------------
 
-### CREATE SESSION FILE WITH 2FA HANDLER
+### TELETHON SESSION FILE WITH 2FA HANDLER ###
 from telethon.sync import TelegramClient
 
-api_id = 26892726
-api_hash = 'd80afce6c6f8412ce0e9d1ae5a01f8c7'
+api_id = API_ID
+api_hash = 'API_HASH'
 
 client = TelegramClient('my_session.session', api_id, api_hash)
-client.start('6285722891xxx', '2FA_HERE')
+client.start('PHONE_NUMBER', '2FA_HERE')
 
+------------------------------------------
 
-### CREATE SESSION STRING ###
+### TELETHON SESSION STRING ###
 from telethon.sync import TelegramClient
 from telethon.sessions import StringSession
 
-api_id = 26892726
-api_hash = 'd80afce6c6f8412ce0e9d1ae5a01f8c7'
+api_id = API_ID
+api_hash = 'API_HASH'
 
 with TelegramClient(StringSession(), api_id, api_hash) as client:
     session_string = client.session.save()
     print(f"Your session string:\n{session_string}")
 
+------------------------------------------
 
-### CREATE SESSION FILE WITH PYROGRAM ###
+### PYROGRAM SESSION FILE ###
 from pyrogram import Client
 
-api_id = 26892726
-api_hash = 'd80afce6c6f8412ce0e9d1ae5a01f8c7'
+api_id = API_ID
+api_hash = 'API_HASH'
 with Client('my_session', api_id, api_hash) as app:
     app.send_message('me', 'Hello, Pyrogram!')
