@@ -2,8 +2,8 @@ from telethon.sync import TelegramClient
 from telethon.tl.functions.account import UpdateProfileRequest
 import random
 
-api_id = 26892726
-api_hash = 'd80afce6c6f8412ce0e9d1ae5a01f8c7'
+api_id = API_ID
+api_hash = 'API_HASH'
 
 # List of names in a text file, each name on a separate line
 names_file = 'names.txt'
