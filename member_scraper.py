@@ -1,3 +1,10 @@
+"""
+
+        Gathering member's info from specified group.
+        Watch the demo here: https://www.youtube.com/watch?v=FyrhRElpS0I
+
+"""
+
 from telethon.sync import TelegramClient
 import json
 import csv
