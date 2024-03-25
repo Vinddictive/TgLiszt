@@ -12,14 +12,12 @@ Just updated the repo ✨ I've created `telegram.py` that serves as a wrapper fo
 from telegram import Telegram, TelethonSession, PyrogramSession
 
 # Initialize instances
-ts = TelethonSession()
+tg = Telegram()
 
-# Define API credentials and user information
-api_id = API_ID
-api_hash = "API_HASH"
-phone = "PHONE_NUMBER"
-password = "2FA"  # Optional
+session_file = "my_session.session"  # Path to your session file.
+api_id = 12345678
+api_hash = "e90dbf5k91d616a24b..."
 
-# Call the 'session_file' method from 'TelethonSession' class
-ts.session_file(api_id, api_hash, phone, password)
+# Call the 'login' method from 'Telegram' class
+tg.login(session_file, api_id, api_hash)
 ```
