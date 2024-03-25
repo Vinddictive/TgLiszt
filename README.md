@@ -9,7 +9,7 @@ Just updated the repo ✨ I've created `telegram.py` that serves as a wrapper fo
 ## Example
 ```python
 # Import the necessary classes from 'telegram' module
-from main import Telegram, TelethonSession, PyrogramSession
+from telegram import Telegram, TelethonSession, PyrogramSession
 
 # Initialize instances
 ts = TelethonSession()
