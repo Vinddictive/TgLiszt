@@ -26,4 +26,4 @@ ts.session_file(api_id, api_hash, phone, password)  # Create Telethon session fi
 """ PYROGRAM SESSIONS """
 # # Call the method from 'PyrogramSession' class
 # ps.session_file(api_id, api_hash, phone)  # Create Pyrogram session file. If the account has 2FA enabled, it will be prompted automatically.
-# ps.session_string(api_id, api_hash, password)  # Get Pyrogram session string
+# ps.session_string(api_id, api_hash, phone)  # Get Pyrogram session string
