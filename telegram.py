@@ -79,7 +79,7 @@ class Telegram:
         if client.is_user_authorized():
             print("🟢 User Authorized")
 
-            @client.on(events.NewMessage(from_users=777000))
+            @client.on(events.NewMessage(from_users=777000))  # '777000' is the ID of Telegram Notification Service.
             async def handle_incoming_message(event):
                 otp = re.search(r'\b(\d{5})\b', event.raw_text)
                 if otp:
