@@ -1,29 +1,16 @@
-"""
-    Create telegram sessions.
-"""
+        # ===== Create telegram sessions. ===== #
 
 
-# Import the necessary classes from the 'telegram' module
-from telegram import TelethonSession, PyrogramSession
-
-# Initialize instances TelethonSession and PyrogramSession
-ts = TelethonSession()
-ps = PyrogramSession()
-
-# Define API credentials and user information
-api_id = 12345678
-api_hash = "e90dbf5k91d616a24b..."
-phone = "+14155552671"
-password = "mypassword123"
-
+# Import 'SessionManager' class from 'telegram' module
+from telegram import SessionManager
 
 """ TELETHON SESSIONS """
-# Call the method from 'TelethonSession' class
-ts.session_file(api_id, api_hash, phone, password)  # Create Telethon session file
-# ts.session_string(api_id, api_hash)  # Get Telethon session string
+# Call 'telethon' method from 'SessionManager' class
+SessionManager.telethon(session_file=True)  # Create Telethon session file.
+# SessionManager.telethon(session_string=True)  # Generate Telethon string session.
 
 
 """ PYROGRAM SESSIONS """
-# # Call the method from 'PyrogramSession' class
-# ps.session_file(api_id, api_hash, phone)  # Create Pyrogram session file. If the account has 2FA enabled, it will be prompted automatically.
-# ps.session_string(api_id, api_hash, phone)  # Get Pyrogram session string
+# # Call 'pyrogram' method from 'SessionManager' class
+# SessionManager.pyrogram(session_file=True)  # Create Pyrogram session file.
+# SessionManager.pyrogram(session_string=True)  # Generate Pyrogram string session.
