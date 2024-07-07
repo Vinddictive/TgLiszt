@@ -1,3 +1,4 @@
+import winsound
 import sqlite3
 import json
 import csv
@@ -7,7 +8,7 @@ import re
 try:
     import pyperclip
 except ModuleNotFoundError:
-    print("Error: Pyperclip library is not installed. Please install it using 'pip install pyperclip'")
+    print("\n―― ⚠️ Pyperclip library is not installed. Please install it using 'pip install pyperclip'")
     sys.exit()
 
 try:
@@ -17,149 +18,224 @@ try:
     from telethon import functions
     import telethon.errors
 except ModuleNotFoundError:
-    print("Error: Telethon library is not installed. Please install it using 'pip install telethon'")
+    print("\n―― ⚠️ Telethon library is not installed. Please install it using 'pip install telethon'")
     sys.exit()
 
 try:
     from pyrogram import Client, filters
 except ModuleNotFoundError:
-    print("Error: Pyrogram library is not installed. Please install it using 'pip install pyrogram'")
+    print("\n―― ⚠️ Pyrogram library is not installed. Please install it using 'pip install pyrogram'")
     sys.exit()
 
 
 class SessionManager:
     @staticmethod
-    def telethon(session_file: bool = False, session_string: bool = False) -> None:
+    def telethon(api_id: int = None, api_hash: str = None, phone: str = None, password=None,
+                 session_file: bool = False, session_string: bool = False):
         """
-        Create new Telethon sessions.
-        :param session_file: Create Telethon session file.
-        :param session_string: Generate Telethon string session.
+        Create a Telegram session using Telethon.
+
+        This method allows you to create a Telegram session either as a session file or as a session string.
+
+        All parameters are optional (except 'session_file' and 'session_string'). If not provided, you will be prompted to enter them.
+
+        If `session_string` is set to True, you will be prompted to choose between:
+
+        [1] Creating a string session by logging in.
+
+        [2] Generating a string session from an existing session file.
+
+        :param api_id: Your Telegram API ID.
+        :param api_hash: Your Telegram API hash.
+        :param phone: Your phone number in international format.
+        :param password: Your 2-Step Verification password.
+        :param session_file: If True, create a Telethon session file.
+        :param session_string: If True, generate a Telethon string session.
         """
-        if session_file:
-            api_id_sf = int(input("Enter your API ID: "))
-            api_hash_sf = input("Enter your API HASH: ")
-            phone = input("Enter your phone number in international format: ")
-            password = input("Enter 2-Step Verification: ")
-            client1 = TelegramClient(f'{phone}.session', api_id_sf, api_hash_sf)
-            client1.start(phone, password)
-            print("\n   🟢 Success!")
 
-        elif session_string:
-            print("\n   1. Create string session by logging in\n   2. Generate string session from a session file\n")
-            session_method = input("Choose how you want to create the session string (Type 1 or 2): ")
+        if session_file and session_string or not session_file and not session_string:
+            print("\n―― ℹ️ Please specify a valid session type."
+                  "\n―― To create a Telethon session file, set 'session_file' to True."
+                  "\n―― To generate a Telethon string session, set 'session_string' to True.")
+            winsound.PlaySound("SystemHand", winsound.SND_ALIAS)
+            return
 
-            if session_method == "1":
-                api_id_ssl = int(input("\nEnter your API ID: "))
-                api_hash_ssl = str(input("Enter your API hash: "))
-                phone_ssl = input("Enter your phone number in international format: ")
-                password_ssl = input("Enter 2-Step Verification: ")
-                with TelegramClient(StringSession(), api_id_ssl, api_hash_ssl).start(phone=phone_ssl, password=password_ssl) as client_ssl:
-                    session_string_ssl = client_ssl.session.save()
-                    pyperclip.copy(session_string_ssl)  # Auto copy the string to Clipboard
-                    print(f"\n{session_string_ssl}\n")
-                    print(f"    🟢 Success!\n"
-                          f"     The session string has been copied to the clipboard.")
-
-            elif session_method == "2":
-                api_id = int(input("\nEnter your API ID: "))
-                api_hash = input("Enter your API hash: ")
-                session_name = input("Enter your Telethon session file name: ")
-                try:
-                    client = TelegramClient(session_name, api_id, api_hash)
-                    string = StringSession.save(client.session)
-                    pyperclip.copy(string)
-                    print(f"\n{string}\n")
-                    print(f"    🟢 Success!\n"
-                          f"     The session string has been copied to the clipboard.")
-                except sqlite3.OperationalError:
-                    print("\nUnable to generate the session string. Please ensure you are using a Telethon session file.")
+        try:
+            if api_id and api_hash and phone:
+                my_api_id = api_id
+                my_api_hash = api_hash
+                my_phone = phone
+                my_pwd = password
             else:
-                print("Invalid input.")
-        else:
-            print("Invalid input.")
+                my_api_id = int(input("Enter your API ID: "))
+                my_api_hash = input("Enter your API HASH: ")
+                my_phone = input("Enter your phone number in international format: ")
+                my_pwd = input("Enter 2-Step Verification: \n")
+
+            if session_file:
+                client = TelegramClient(f'{my_phone}.session', my_api_id, my_api_hash)
+                client.start(my_phone, my_pwd)
+                print("\n―― 🟢 Session file created successfully!")
+                winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
+            elif session_string:
+                print("\n―― [1]. Create string session by logging in\n―― [2]. Generate string session from existing session file")
+                session_method = input("\n―― Choose how you want to create the session string: ")
+
+                if session_method == "1":
+                    with TelegramClient(StringSession(), my_api_id, my_api_hash).start(phone=my_phone, password=my_pwd) as client:
+                        my_string = client.session.save()
+                        pyperclip.copy(my_string)  # Auto copy the string to Clipboard
+                        print(f"\n{my_string}")
+                        print("\n―― 🟢 String session created successfully!"
+                              f"\n―― String copied to clipboard!")
+                        winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
+
+                elif session_method == "2":
+                    session_name = input("Enter your Telethon session file name: ")
+                    try:
+                        client = TelegramClient(session_name, my_api_id, my_api_hash)
+                        string = StringSession.save(client.session)
+                        pyperclip.copy(string)
+                        print(f"\n{string}\n")
+                        print("\n―― 🟢 String session generated successfully!"
+                              f"\n―― String copied to clipboard!")
+                        winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
+                    except sqlite3.OperationalError:
+                        print("\n―― ⚠️ Unable to generate the session string. Please ensure you are using a Telethon session file.")
+                        winsound.PlaySound("SystemHand", winsound.SND_ALIAS)
+                else:
+                    print("\n―― ⚠️ Invalid input. Please type '1' to create a new string session or '2' to generate a string session from an existing session file.")
+                    winsound.PlaySound("SystemHand", winsound.SND_ALIAS)
+        except Exception as e:
+            print(f"\n―― ❌ An error has occurred: {e}")
+            winsound.PlaySound("SystemHand", winsound.SND_ALIAS)
 
     @staticmethod
-    def pyrogram(session_file: bool = False, session_string: bool = False) -> None:
+    def pyrogram(api_id: int = None, api_hash: str = None, phone: str = None, session_file: bool = False, session_string: bool = False):
         """
-        Create new Pyrogram sessions.
-        :param session_file: Create Pyrogram session file.
-        :param session_string: Generate Pyrogram string session.
+        Create a Telegram session using Pyrogram.
+
+        This method allows you to create a Telegram session either as a session file or as a session string.
+
+        All parameters are optional (except 'session_file' and 'session_string'). If not provided, you will be prompted to enter them.
+
+        If `session_string` is set to True, you will be prompted to choose between:
+
+        [1] Creating a string session by logging in.
+
+        [2] Generating a string session from an existing session file.
+
+        :param api_id: Your Telegram API ID.
+        :param api_hash: Your Telegram API hash.
+        :param phone: Your phone number in international format.
+        :param session_file: If True, create a Pyrogram session file.
+        :param session_string: If True, generate a Pyrogram string session.
         """
-        if session_file:
-            api_id = int(input("Enter your API ID: "))
-            api_hash = input("Enter your API HASH: ")
-            phone = input("Enter your phone number in international format: ")
-            with Client(phone, api_id, api_hash, phone_number=phone) as client:
-                client.send_message('me', 'Hi!')
-                print("\n   🟢 Success!")
 
-        elif session_string:
-            print("\n   1. Create string session by logging in\n   2. Generate string session from a session file\n")
-            session_method = input("Choose how you want to create the session string (Type 1 or 2): ")
+        if session_file and session_string or not session_file and not session_string:
+            print("\n―― ℹ️ Please specify a valid session type."
+                  "\n―― To create a Pyrogram session file, set 'session_file' to True."
+                  "\n―― To generate a Pyrogram string session, set 'session_string' to True.")
+            winsound.PlaySound("SystemHand", winsound.SND_ALIAS)
+            return
 
-            if session_method == "1":
-                api_id = int(input("\nEnter your API ID: "))
-                api_hash = input("Enter your API HASH: ")
-                phone = input("Enter your phone number in international format: ")
-                with Client(phone, api_id, api_hash, phone_number=phone) as client:
-                    pg_string = client.export_session_string()
-                    pyperclip.copy(pg_string)
-                    print(f"\n{pg_string}\n")
-                    print(f"    🟢 Success!\n"
-                          f"     The session string has been copied to the clipboard.")
-            elif session_method == "2":
-                try:
-                    api_id = int(input("\nEnter your API ID: "))
-                    api_hash = input("Enter your API HASH: ")
-                    name = input("Enter your Pyrogram session file name: ")
-                    with Client(name, api_id, api_hash) as client:
-                        pg_string = client.export_session_string()
-                        pyperclip.copy(pg_string)
-                        print(f"\n{pg_string}\n")
-                        print(f"    🟢 Success!\n"
-                              f"     The session string has been copied to the clipboard.")
-                except sqlite3.OperationalError:
-                    print("\nUnable to generate the session string. Please ensure you are using a Pyrogram session file.")
+        try:
+            if api_id and api_hash and phone:
+                my_api_id = api_id
+                my_api_hash = api_hash
+                my_phone = phone
             else:
-                print("Invalid input.")
-        else:
-            print("Invalid input.")
+                my_api_id = int(input("Enter your API ID: "))
+                my_api_hash = input("Enter your API HASH: ")
+                my_phone = input("Enter your phone number in international format: ")
+
+            if session_file:
+                with Client(my_phone, my_api_id, my_api_hash, phone_number=my_phone) as client:
+                    client.send_message('me', 'Hi!')
+                    print("\n―― 🟢 Session file created successfully!")
+                    winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
+            elif session_string:
+                print("\n―― [1]. Create string session by logging in\n―― [2]. Generate string session from existing session file")
+                session_method = input("\n―― Choose how you want to create the session string: ")
+
+                if session_method == "1":
+                    with Client(my_phone, my_api_id, my_api_hash, phone_number=my_phone) as client:
+                        string = client.export_session_string()
+                        pyperclip.copy(string)
+                        print(f"\n{string}\n")
+                        print("\n―― 🟢 String session created successfully!"
+                              f"\n―― String copied to clipboard!")
+                        winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
+                elif session_method == "2":
+                    try:
+                        name = input("Enter your Pyrogram session file name: ")
+                        with Client(name, my_api_id, my_api_hash) as client:
+                            string = client.export_session_string()
+                            pyperclip.copy(string)
+                            print(f"\n{string}\n")
+                            print("\n―― 🟢 String session generated successfully!"
+                                  f"\n―― String copied to clipboard!")
+                            winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
+                    except sqlite3.OperationalError:
+                        print("\n―― ⚠️ Unable to generate the session string. Please ensure you are using a Pyrogram session file.")
+                        winsound.PlaySound("SystemHand", winsound.SND_ALIAS)
+                else:
+                    print("\n―― ⚠️ Invalid input. Please type '1' to create a new string session or '2' to generate a string session from an existing session file.")
+                    winsound.PlaySound("SystemHand", winsound.SND_ALIAS)
+        except Exception as e:
+            print(f"\n―― ❌ An error has occurred: {e}")
+            winsound.PlaySound("SystemHand", winsound.SND_ALIAS)
 
 
 class Telegram:
     @staticmethod
-    def login():
+    def login(api_id: int = None, api_hash: str = None, session_name: str = None):
         """
         Login to Telegram using Telethon session file.
+
+        All parameters are optional. If not provided, you will be prompted to enter them.
+
         """
-        api_id = int(input("Enter your API ID: "))
-        api_hash = input("Enter your API HASH: ")
-        session_name = input("Enter your Telethon session file name: ")
         try:
-            client = TelegramClient(session_name, api_id, api_hash)
+            if api_id and api_hash and session_name:
+                my_api_id = api_id
+                my_api_hash = api_hash
+                my_session = session_name
+            else:
+                my_api_id = int(input("Enter your API ID: "))
+                my_api_hash = input("Enter your API HASH: ")
+                my_session = input("Enter your Telethon session file name: ")
+
+            client = TelegramClient(my_session, my_api_id, my_api_hash)
             client.connect()
             if client.is_user_authorized():
-                print("\n🟢 User Authorized")
+                print("\n―― 🟢 User Authorized!")
 
                 @client.on(events.NewMessage(from_users=777000))  # '777000' is the ID of Telegram Notification Service.
-                async def handle_incoming_message(event):
+                async def catch_msg(event):
                     otp = re.search(r'\b(\d{5})\b', event.raw_text)
                     if otp:
-                        print("OTP received ✅\nYour login code:", otp.group(0))
+                        print("\n―― OTP received ✅\n―― Your login code:", otp.group(0))
                         client.disconnect()
-                print("Please login to your telegram app. [Listening for OTP...]\n")
+                        winsound.PlaySound("SystemExclamation", winsound.SND_ALIAS)
+                print("\n―― Please request an OTP code in your Telegram app.\n―― 📲 𝙻𝚒𝚜𝚝𝚎𝚗𝚒𝚗𝚐 𝚏𝚘𝚛 𝚒𝚗𝚌𝚘𝚖𝚒𝚗𝚐 𝙾𝚃𝙿 . . .")
                 with client:
                     client.run_until_disconnected()
             else:
-                print("\n🔴 Authorization Failed\n"
-                      "Invalid Telethon session file or the session has expired.")
+                print("\n―― 🔴 Authorization Failed!"
+                      "\n―― Invalid Telethon session file or the session has expired.")
+                winsound.PlaySound("SystemHand", winsound.SND_ALIAS)
         except sqlite3.OperationalError:
-            print("\nUnable to generate the session string. Please ensure you are using a Telethon session file.")
+            print("\n―― ⚠️ Unable to generate the session string. Please ensure you are using a Pyrogram session file.")
+            winsound.PlaySound("SystemHand", winsound.SND_ALIAS)
+        except Exception as e:
+            print(f"\n—— ❌ An error has occurred: {e}")
+            winsound.PlaySound("SystemHand", winsound.SND_ALIAS)
 
     @staticmethod
     def userinfo():
         """
-        Retrieves information about the current user. (Only support Telethon session file.)
+        Retrieves information about the current user.
         """
         try:
             api_id = int(input("Enter your API ID: "))
@@ -231,7 +307,7 @@ class Telegram:
     @staticmethod
     def member_scrape():
         """
-        Scrape member's info from specified group. (Only support Telethon session file.)
+        Scrape member's info from specified group.
         """
         def json_save():
             user_info_json = []
