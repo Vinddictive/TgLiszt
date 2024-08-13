@@ -199,6 +199,32 @@ class Telegram:
             print(f"\n—— ❌ An error has occurred: {e}")
 
     @staticmethod
+    async def set_2fa(session_name: str, api_id: int, api_hash: str, new_password: str):
+        """
+        Sets a new Two-Step Verification (2FA) password.
+
+        >>> # Call this function from within an asynchronous context
+        >>> tg = Telegram()
+        >>> asyncio.run(tg.set_2fa('telethon.session', api_id, api_hash, 'my_password'))  # noqa
+        :param session_name: The name of your Telethon session file (e.g., 'my_session.session').
+        :param api_id: Telegram API ID.
+        :param api_hash: Telegram API hash.
+        :param new_password: The new 2FA password to set for the account.
+        """
+        
+        _name = session_name or input("Enter your Telethon session file name: ")
+        _api_id = api_id or int(input("Enter your API ID: "))
+        _api_hash = api_hash or input("Enter your API HASH: ")
+        _new_pwd = new_password or input("Enter your new 2FA password: ")
+        
+        async with TelegramClient(_name, _api_id, _api_hash) as client:
+            try:
+                await client.edit_2fa(new_password=_new_pwd)
+                print(f"—— 🟢 2FA password '{_new_pwd}' has been set successfully!")
+            except telethon.errors.PasswordHashInvalidError:
+                print("—— ❌ 2FA is already enabled. You need to provide the current 2FA password.")
+                
+    @staticmethod
     def userinfo(api_id: int = None, api_hash: str = None, session_name: str = None) -> None:
         """
         Retrieves information about the current user.
