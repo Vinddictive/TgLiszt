@@ -6,22 +6,22 @@ Check out 🤖 [`MyOTP!`](https://www.t.me/myotprobot) telegram bot for easy log
 ## Features
 - Create Telethon and Pyrogram sessions.
 - Login to telegram app using Telethon session file.
-- Scrape members' info such as name, username, etc.
-- Retrieve all user created groups and channels.
+- Manage account settings, including viewing connected devices, listing created groups/channels, and updating 2FA.
 
 
 ## Installation
 
-1. Download the `telegram.py` script and `requirements.txt` file from this repository.
-2. Navigate to your project directory in the terminal.
+1. Download both the `telegram.py` script and the `requirements.txt` file from this repository.
+2. Open your terminal or command prompt. Use `cd` to navigate to the directory where you’ve saved the downloaded files.
 3. Run the following command to install dependencies from the `requirements.txt` file:
   
   ```sh
   pip install -r requirements.txt
   ```
 
-   - Make sure that both `telegram.py` script and `requirements.txt` file are in the same directory as your main script.
-   - You're all set! You can now import and use all functions within `telegram.py`
+   - Make sure that both the `telegram.py` script and the `requirements.txt` file are located in the same directory as your main project script.
+
+Once installed, you can import and use all the available functions from the telegram.py script in your project.
 
 ## Helpful Resources
 - [YT itslizt](https://www.youtube.com/@_nft)
