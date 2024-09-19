@@ -1,21 +1,41 @@
 import sqlite3, sys, re  # noqa E401
-import pyperclip
 
 try:
     from telethon.sync import TelegramClient, events
     from telethon.sessions import StringSession
-    from telethon import functions
+    from telethon import functions, errors as t_errors
     from telethon.tl.types import Channel
-    import telethon.errors
 except (ImportError, ModuleNotFoundError):
-    print("\n―― ⚠️ Telethon library is not installed. Please install it using `pip install telethon`")
+    print("\n―― ⚠️ The Telethon library is not installed.")
+    print("―― Please install it by running: `pip install telethon`")
     sys.exit()
 
 try:
-    from pyrogram import Client, filters
+    from pyrogram import Client, filters, errors as p_errors
 except (ImportError, ModuleNotFoundError):
-    print("\n―― ⚠️ Pyrogram library is not installed. Please install it using `pip install pyrogram`")
+    print("\n―― ⚠️ The Pyrogram library is not installed.")
+    print("―― Please install it by running: `pip install pyrogram`")
     sys.exit()
+
+
+def _info_msg(string=None, warn=False):
+    if warn:
+        print(
+            "\n―― ⚠️ WARNING: Frequently creating sessions and requesting OTPs may increase the risk of "
+            "your account being temporarily or permanently banned."
+            "\n―― Telegram monitors unusual activity, such as multiple login attempts in a short period of time."
+            "\n―― Be cautious and avoid creating too many sessions too quickly."
+            "\n―― ℹ️ Telegram ToS: https://core.telegram.org/api/terms"
+            "\n―― ℹ️ Telethon FAQ: https://docs.telethon.dev/en/stable/quick-references/faq.html#my-account-was-deleted-limited-when-using-the-library\n\n")
+    else:
+        print(f"\n{string}")
+        print("\n―― 🟢 String session created successfully!")
+        try:
+            import pyperclip
+            pyperclip.copy(string)  # Auto copy the string to Clipboard
+            print("―― 🟢 String copied to clipboard!")
+        except ModuleNotFoundError:
+            pass
 
 
 class SessionManager:
@@ -24,6 +44,7 @@ class SessionManager:
 
     `[YouTube] How to Create Telegram Sessions <https://www.youtube.com/watch?v=-2vWERIXXZU>`_
     """
+
     @staticmethod
     def telethon(api_id: int = None, api_hash: str = None, phone: str = None, password=None,
                  session_file=False, session_string=False) -> None:
@@ -46,51 +67,51 @@ class SessionManager:
                   "\n―― To generate a Telethon string session, set 'session_string' to True.")
             return
 
-        try:
-            api_id_ = api_id or int(input("Enter your API ID: "))
-            api_hash_ = api_hash or input("Enter your API HASH: ")
-            phone_ = phone or input("Enter your phone number (e.g. +1234567890): ")
-            pwd_ = password or input("Enter 2-Step Verification (press 'Enter' if you don't have it): ")
+        _info_msg(warn=True)
 
+        api_id_ = api_id or int(input("Enter your API ID: "))
+        api_hash_ = api_hash or input("Enter your API HASH: ")
+
+        try:
             if session_file:
+                phone_ = phone or input("Enter your phone number (e.g. +1234567890): ")
+                pwd_ = password or input("Enter 2-Step Verification (press 'Enter' if you don't have it): ")
                 client = TelegramClient(f'{phone_}.session', api_id_, api_hash_)
                 client.start(phone_, pwd_)
                 print("\n―― 🟢 Session file created successfully!")
 
             if session_string:
-                print("\n―― [1]. Create string session by logging in"
-                      "\n―― [2]. Generate string session from existing session file")
-                _method = input("\n―― Choose how you want to create the session string: ")
+                print("\n―― [ 1 ] Log in to create a new session string"
+                      "\n―― [ 2 ] Generate a session string from an existing session file"
+                      "\n―― [ 0 ] Exit")
+                user_input = input("\n―― Choose how you want to create the session string: ")
 
-                if _method == "1":
+                if user_input == "1":
+                    phone_ = phone or input("Enter your phone number (e.g. +1234567890): ")
+                    pwd_ = password or input("Enter 2-Step Verification (press 'Enter' if you don't have it): ")
                     with TelegramClient(StringSession(), api_id_, api_hash_).start(phone=phone_, password=pwd_) as client:
                         string = client.session.save()
-                        print(f"\n{string}")
-                        print("\n―― 🟢 String session created successfully!")
-                        try:
-                            pyperclip.copy(string)  # Auto copy the string to Clipboard
-                            print("―― 🟢 String copied to clipboard!")
-                        except (ImportError, ModuleNotFoundError):
-                            pass
+                        _info_msg(string=string)
 
-                elif _method == "2":
-                    name = input("Enter your Telethon session file name: ")
+                elif user_input == "2":
+                    name = input("Enter your Telethon session file name (e.g. `my_session.session`): ")
                     try:
                         client = TelegramClient(name, api_id_, api_hash_)
                         string = StringSession.save(client.session)
-                        print(f"\n{string}")
-                        print("\n―― 🟢 String session created successfully!")
-                        try:
-                            pyperclip.copy(string)
-                            print("―― 🟢 String copied to clipboard!")
-                        except (ImportError, ModuleNotFoundError):
-                            pass
+                        _info_msg(string=string)
                     except sqlite3.OperationalError:
-                        print("\n―― ⚠️ Unable to generate the session string. Please ensure you are using a Telethon session file.")
+                        print("\n―― ⚠️ Unable to generate the session string. "
+                              "Please ensure you are using a Telethon session file.")
+                elif user_input == "0":
+                    return
                 else:
-                    print("\n―― ⚠️ Invalid input. Please type `1` to create a new string session or `2` to generate a string session from an existing session file.")
+                    print("\n―― ⚠️ Invalid input. Please type `1` to create a new string session or `2` "
+                          "to generate a string session from an existing session file.")
+
+        except t_errors.RPCError as e:
+            print(f"\n―― ❌ An RPC error occurred: {e}")
         except Exception as e:
-            print(f"\n―― ❌ An error has occurred: {e}")
+            print(f"\n―― ❌ An unexpected error occurred: {e}")
 
     @staticmethod
     def pyrogram(api_id: int = None, api_hash: str = None, phone: str = None,
@@ -113,48 +134,47 @@ class SessionManager:
                   "\n―― To generate a Pyrogram string session, set 'session_string' to True.")
             return
 
+        _info_msg(warn=True)
+
         try:
             api_id_ = api_id or int(input("Enter your API ID: "))
             api_hash_ = api_hash or input("Enter your API HASH: ")
-            phone_ = phone or input("Enter your phone number (e.g. +1234567890): ")
 
             if session_file:
+                phone_ = phone or input("Enter your phone number (e.g. +1234567890): ")
                 with Client(phone_, api_id_, api_hash_, phone_number=phone_) as client:
                     client.send_message('me', 'Hi!')
                     print("\n―― 🟢 Session file created successfully!")
-            elif session_string:
-                print("\n―― [1]. Create string session by logging in"
-                      "\n―― [2]. Generate string session from existing session file")
-                _method = input("\n―― Choose how you want to create the session string: ")
+            if session_string:
+                print("\n―― [ 1 ] Log in to create a new session string"
+                      "\n―― [ 2 ] Generate a session string from an existing session file"
+                      "\n―― [ 0 ] Exit")
+                user_input = input("\n―― Choose how you want to create the session string: ")
 
-                if _method == "1":
+                if user_input == "1":
+                    phone_ = phone or input("Enter your phone number (e.g. +1234567890): ")
                     with Client(phone_, api_id_, api_hash_, phone_number=phone_) as client:
                         string = client.export_session_string()
-                        print(f"\n{string}")
-                        print("\n―― 🟢 String session created successfully!")
-                        try:
-                            pyperclip.copy(string)
-                            print("―― 🟢 String copied to clipboard!")
-                        except (ImportError, ModuleNotFoundError):
-                            pass
-                elif _method == "2":
+                        _info_msg(string=string)
+                elif user_input == "2":
                     try:
-                        name = input("Enter your Pyrogram session file name: ")
+                        name = input("Enter your Pyrogram session file name (e.g. `my_session.session`): ")
                         with Client(name, api_id_, api_hash_) as client:
                             string = client.export_session_string()
-                            print(f"\n{string}")
-                            print("\n―― 🟢 String session created successfully!")
-                            try:
-                                pyperclip.copy(string)
-                                print("―― 🟢 String copied to clipboard!")
-                            except (ImportError, ModuleNotFoundError):
-                                pass
+                            _info_msg(string=string)
                     except sqlite3.OperationalError:
-                        print("\n―― ⚠️ Unable to generate the session string. Please ensure you are using a Pyrogram session file.")
+                        print("\n―― ⚠️ Unable to generate the session string. "
+                              "Please ensure you are using a Pyrogram session file.")
+                elif user_input == "0":
+                    return
                 else:
-                    print("\n―― ⚠️ Invalid input. Please type `1` to create a new string session or `2` to generate a string session from an existing session file.")
+                    print("\n―― ⚠️ Invalid input. Please type `1` to create a new string session or `2` "
+                          "to generate a string session from an existing session file.")
+
+        except p_errors.RPCError as e:
+            print(f"\n―― ❌ An RPC error occurred: {e}")
         except Exception as e:
-            print(f"\n―― ❌ An error has occurred: {e}")
+            print(f"\n―― ❌ An unexpected error occurred: {e}")
 
 
 class Telegram:
@@ -163,6 +183,7 @@ class Telegram:
 
     `[YouTube] Login to Telegram Using a Session File or String Session <https://www.youtube.com/watch?v=T2qQfX7kjgI>`_
     """
+
     @staticmethod
     def login(api_id: int = None, api_hash: str = None, session_name: str = None) -> None:
         """
@@ -171,11 +192,14 @@ class Telegram:
         :param api_hash: Telegram API hash.
         :param session_name: Your Telethon session file name
         """
-        try:
-            api_id_ = api_id or int(input("Enter your API ID: "))
-            api_hash_ = api_hash or input("Enter your API HASH: ")
-            name_ = session_name or input("Enter your Telethon session file name: ")
+        print("\n―― ℹ️ This method only supports Telethon session files. If you're using Pyrogram, "
+              "please switch to Telethon for this function to work properly.")
 
+        api_id_ = api_id or int(input("Enter your API ID: "))
+        api_hash_ = api_hash or input("Enter your API HASH: ")
+        name_ = session_name or input("Enter your Telethon session file name (e.g. `my_session.session`): ")
+
+        try:
             client = TelegramClient(name_, api_id_, api_hash_)
             client.connect()
             if client.is_user_authorized():
@@ -187,43 +211,21 @@ class Telegram:
                     if otp:
                         print("\n―― OTP received ✅\n―― Your login code:", otp.group(0))
                         client.disconnect()
-                print("\n―― Please request an OTP code in your Telegram app.\n―― 📲 𝙻𝚒𝚜𝚝𝚎𝚗𝚒𝚗𝚐 𝚏𝚘𝚛 𝚒𝚗𝚌𝚘𝚖𝚒𝚗𝚐 𝙾𝚃𝙿 . . .")
+
+                print("\n―― Please request an OTP code in your Telegram app."
+                      "\n―― 📲 𝙻𝚒𝚜𝚝𝚎𝚗𝚒𝚗𝚐 𝚏𝚘𝚛 𝚒𝚗𝚌𝚘𝚖𝚒𝚗𝚐 𝙾𝚃𝙿 . . .")
                 with client:
                     client.run_until_disconnected()
             else:
                 print("\n―― 🔴 Authorization Failed!"
                       "\n―― Invalid Telethon session file or the session has expired.")
         except sqlite3.OperationalError:
-            print("\n―― ⚠️ Unable to generate the session string. Please ensure you are using a Pyrogram session file.")
+            print("\n―― ⚠️ Invalid Telethon session file. Please ensure you are using a Telethon session file.")
+        except t_errors.RPCError as e:
+            print(f"\n―― ❌ An RPC error occurred: {e}")
         except Exception as e:
-            print(f"\n—— ❌ An error has occurred: {e}")
+            print(f"\n―― ❌ An unexpected error occurred: {e}")
 
-    @staticmethod
-    async def set_2fa(session_name: str, api_id: int, api_hash: str, new_password: str):
-        """
-        Sets a new Two-Step Verification (2FA) password.
-
-        >>> # Call this function from within an asynchronous context
-        >>> tg = Telegram()
-        >>> asyncio.run(tg.set_2fa('telethon.session', api_id, api_hash, 'my_password'))  # noqa
-        :param session_name: The name of your Telethon session file (e.g., 'my_session.session').
-        :param api_id: Telegram API ID.
-        :param api_hash: Telegram API hash.
-        :param new_password: The new 2FA password to set for the account.
-        """
-        
-        _name = session_name or input("Enter your Telethon session file name: ")
-        _api_id = api_id or int(input("Enter your API ID: "))
-        _api_hash = api_hash or input("Enter your API HASH: ")
-        _new_pwd = new_password or input("Enter your new 2FA password: ")
-        
-        async with TelegramClient(_name, _api_id, _api_hash) as client:
-            try:
-                await client.edit_2fa(new_password=_new_pwd)
-                print(f"—— 🟢 2FA password '{_new_pwd}' has been set successfully!")
-            except telethon.errors.PasswordHashInvalidError:
-                print("—— ❌ 2FA is already enabled. You need to provide the current 2FA password.")
-                
     @staticmethod
     def userinfo(api_id: int = None, api_hash: str = None, session_name: str = None) -> None:
         """
@@ -232,27 +234,34 @@ class Telegram:
         :param api_hash: Telegram API hash.
         :param session_name: Your Telethon session file name
         """
-        try:
-            api_id_ = api_id or int(input("Enter your API ID: "))
-            api_hash_ = api_hash or input("Enter your API HASH: ")
-            name_ = session_name or input("Enter your Telethon session file name: ")
+        print("\n―― ℹ️ This method only supports Telethon session files. If you're using Pyrogram, "
+              "please switch to Telethon for this function to work properly.")
 
+        api_id_ = api_id or int(input("Enter your API ID: "))
+        api_hash_ = api_hash or input("Enter your API HASH: ")
+        name_ = session_name or input("Enter your Telethon session file name: ")
+
+        try:
             with TelegramClient(name_, api_id_, api_hash_) as client:
                 me = client.get_me()
-
                 name = me.first_name if me.first_name else "-"
                 username = f'@{me.username}' if me.username else "-"
                 uid = me.id
                 phone = me.phone
+
                 print(
-                    f"\n  [ACCOUNT's INFO]\n\n"
+                    f"\n  [ACCOUNT's INFO]\n"
                     f"  Name: {name}\n"
                     f"  Username: {username}\n"
                     f"  ID: {uid}\n"
-                    f"  Phone Number: +{phone}\n\n"
-                    f"1. View all connected devices.\n2. See a list of groups and channels.\n3. Exit.\n"
+                    f"  Phone Number: +{phone}\n"
+                    f"\n[ 1 ] View Authorized Devices"
+                    f"\n[ 2 ] See a list of user created groups and channels"
+                    f"\n[ 3 ] Set a new 2-Step Verification (2FA) password"
+                    f"\n[ 0 ] Exit\n"
                 )
                 user_input = input("Choose an option by typing its number: ")
+
                 if user_input == "1":
                     result = client(functions.account.GetAuthorizationsRequest())
                     print(result.stringify())
@@ -270,9 +279,11 @@ class Telegram:
                     for group in created_groups:
                         print('\nGroup Name:', group.entity.title)
                         print('Group ID:', group.entity.id)
-                        print('Username:', group.entity.username) if group.entity.username else print("Username: [Private]")
+                        print('Username:', group.entity.username) if group.entity.username else print(
+                            "Username: [Private]")
                         print('Creation Date:', group.entity.date.strftime('%Y-%m-%d'))
-                        print(f'Link: https://www.t.me/{group.entity.username}\n' if group.entity.username else 'Link: [Private]')
+                        print(
+                            f'Link: https://www.t.me/{group.entity.username}\n' if group.entity.username else 'Link: [Private]')
 
                         if group.entity.megagroup:
                             if group.entity.username:
@@ -291,8 +302,19 @@ class Telegram:
                         f"Public Channels: {pub_ch}\n"
                         f"Private Channels: {priv_ch}\n\n"
                     )
-
+                elif user_input == "3":
+                    new_pwd = input("Enter your new 2FA password: ")
+                    try:
+                        client.edit_2fa(new_password=new_pwd)
+                        print(f"—— 🟢 2FA password '{new_pwd}' has been set successfully!")
+                    except t_errors.PasswordHashInvalidError:
+                        print("―― ℹ️ It seems 2FA is already enabled 🤷‍♀️")
                 else:
-                    sys.exit()
+                    return
+
         except sqlite3.OperationalError:
             print("\n―― ⚠️ Unable to connect. Please ensure you are using a Telethon session file.")
+        except t_errors.RPCError as e:
+            print(f"\n―― ❌ An RPC error occurred: {e}")
+        except Exception as e:
+            print(f"\n―― ❌ An unexpected error occurred: {e}")
