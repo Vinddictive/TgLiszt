@@ -6,12 +6,12 @@ Check out 🤖 [`MyOTP!`](https://www.t.me/myotprobot) telegram bot for easy log
 ## Features
 - Create Telethon and Pyrogram sessions.
 - Login to telegram app using Telethon session file.
-- Manage account settings, including viewing connected devices, listing created groups/channels, and updating 2FA.
+- Update 2FA and more.
 
 
 ## Installation
 
-1. Download both the `telegram.py` script and the `requirements.txt` file from this repository.
+1. Download `telegram.py` and `requirements.txt` from this repository.
 2. Open your terminal or command prompt. Use `cd` to navigate to the directory where you’ve saved the downloaded files.
 3. Run the following command to install dependencies from the `requirements.txt` file:
   
@@ -19,9 +19,9 @@ Check out 🤖 [`MyOTP!`](https://www.t.me/myotprobot) telegram bot for easy log
   pip install -r requirements.txt
   ```
 
-   - Make sure that both the `telegram.py` script and the `requirements.txt` file are located in the same directory as your main project script.
+   - Make sure that both the `telegram.py` and the `requirements.txt` are located in the same directory as your main script.
 
-Once installed, you can import and use all the available functions from the telegram.py script in your project.
+Once installed, you can import and use all the available functions from the `telegram.py` in your project. See example file how to import it.
 
 ## Helpful Resources
 - [YT itslizt](https://www.youtube.com/@_nft)
