@@ -56,19 +56,26 @@ def _handle_user_actions(client) -> None:
 
 
 def _show_user_info(client) -> None:
-    me = client.get_me()
-    print(
-        f"\n\t[ACCOUNT's INFO]\n"
-        f"\tID: {me.id}\n"
-        f"\tFirst Name: {me.first_name if me.first_name else '-'}\n"
-        f"\tLast Name: {me.last_name if me.last_name else '-'}\n"
-        f"\tUsername: {'@' + me.username if me.username else '-'}\n"
-        f"\tPhone Number: +{me.phone}\n"
-        f"\tPremium: {me.premium}\n"
-        f"\tRestricted: {me.restricted}\n"
-        f"\tFake: {me.fake}\n"
-        f"\tScam: {me.scam}\n"
-    )
+    try:
+        me = client.get_me()
+        print(
+            f"\n\t[ACCOUNT's INFO]\n"
+            f"\tID: {me.id}\n"
+            f"\tFirst Name: {me.first_name if me.first_name else '-'}\n"
+            f"\tLast Name: {me.last_name if me.last_name else '-'}\n"
+            f"\tUsername: {'@' + me.username if me.username else '-'}\n"
+            f"\tPhone Number: +{me.phone}\n"
+            f"\tPremium: {me.premium}\n"
+            f"\tRestricted: {me.restricted}\n"
+            f"\tFake: {me.fake}\n"
+            f"\tScam: {me.scam}\n"
+        )
+    except telethon_errors.RPCError as e:
+        print(f"―― ❌ An error occurred: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"―― ❌ An unexpected error occurred: {e}")
+        sys.exit(1)
 
 
 def _show_user_channels(client) -> None:
@@ -77,36 +84,43 @@ def _show_user_channels(client) -> None:
     public_channel = 0
     private_channel = 0
 
-    dialogs = client.get_dialogs()
-    created_groups = [dialog for dialog in dialogs if isinstance(dialog.entity, Channel) and dialog.entity.creator]
+    try:
+        dialogs = client.get_dialogs()
+        created_channels = [dialog for dialog in dialogs if isinstance(dialog.entity, Channel) and dialog.entity.creator]
 
-    for group in created_groups:
-        e = group.entity
+        for channel in created_channels:
+            e = channel.entity
+            print(
+                f"ID: {e.id}\n"
+                f"Title: {e.title}\n"
+                f"Username: {e.username if e.username else '-'}\n"
+                f"Creation Date: {e.date.strftime('%Y-%m-%d')}\n"
+                f"Link: {f'https://www.t.me/{e.username}' if e.username else '-'}\n"
+            )
+
+            if e.username:
+                if e.megagroup:
+                    public_group += 1
+                else:
+                    public_channel += 1
+            else:
+                if e.megagroup:
+                    private_group += 1
+                else:
+                    private_channel += 1
+
         print(
-            f"ID: {e.id}\n"
-            f"Title: {e.title}\n"
-            f"Username: {e.username if e.username else '-'}\n"
-            f"Creation Date: {e.date.strftime('%Y-%m-%d')}\n"
-            f"Link: {f'https://www.t.me/{e.username}' if e.username else '-'}\n"
+            f"Public Groups: {public_group}\n"
+            f"Private Groups: {private_group}\n"
+            f"Public Channels: {public_channel}\n"
+            f"Private Channels: {private_channel}\n"
         )
-
-        if e.username:
-            if e.megagroup:
-                public_group += 1
-            else:
-                public_channel += 1
-        else:
-            if e.megagroup:
-                private_group += 1
-            else:
-                private_channel += 1
-
-    print(
-        f"Public Groups: {public_group}\n"
-        f"Private Groups: {private_group}\n"
-        f"Public Channels: {public_channel}\n"
-        f"Private Channels: {private_channel}\n"
-    )
+    except telethon_errors.RPCError as e:
+        print(f"―― ❌ An error occurred: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"―― ❌ An unexpected error occurred: {e}")
+        sys.exit(1)
 
 
 def _update_password(client) -> None:
@@ -129,12 +143,13 @@ def _update_password(client) -> None:
                 print(f"―― 🟢 2FA password has been updated successfully!")
             except telethon_errors.PasswordHashInvalidError:
                 print("―― ❌ The current password you provided is incorrect.")
-            except telethon_errors.RPCError as e:
-                print(f"―― ❌ An error occurred: {e}")
+                sys.exit(1)
     except telethon_errors.RPCError as e:
         print(f"―― ❌ An error occurred: {e}")
+        sys.exit(1)
     except Exception as e:
         print(f"―― ❌ An unexpected error occurred: {e}")
+        sys.exit(1)
 
 
 class SessionManager:
@@ -179,13 +194,13 @@ class SessionManager:
                 "This issue may occur if the session file was created using a different library or is corrupted. "
                 "Please ensure that the session file is compatible with Telethon."
             )
-            return
+            sys.exit(1)
         except telethon_errors.RPCError as e:
             print(f"\n―― ❌ An RPC error occurred: {e}")
-            return
+            sys.exit(1)
         except Exception as e:
             print(f"\n―― ❌ An unexpected error occurred: {e}")
-            return
+            sys.exit(1)
 
         print(
             f"\n―― 🟢 TELETHON SESSION ↓"
@@ -209,7 +224,7 @@ class SessionManager:
         """
         try:
             from pyrogram import Client, filters, errors as pyrogram_errors
-        except (ImportError, ModuleNotFoundError):
+        except ModuleNotFoundError:
             print("\n―― ⚠️ The Pyrogram library is not installed.")
             print("―― Please install it by running: `pip install pyrogram`")
             sys.exit(1)
@@ -229,13 +244,13 @@ class SessionManager:
                 "This issue may occur if the session file was created using a different library or is corrupted. "
                 "Please ensure that the session file is compatible with Pyrogram."
             )
-            return
+            sys.exit(1)
         except pyrogram_errors.RPCError as e:
             print(f"\n―― ❌ An RPC error occurred: {e}")
-            return
+            sys.exit(1)
         except Exception as e:
             print(f"\n―― ❌ An unexpected error occurred: {e}")
-            return
+            sys.exit(1)
 
         print(
             f"\n―― 🟢 PYROGRAM SESSION ↓"
@@ -268,7 +283,7 @@ class Telegram:
 
         user_api_id = api_id or int(input("Enter your API ID: "))
         user_api_hash = api_hash or input("Enter your API HASH: ")
-        user_session_name = session_name or input("Enter your Telethon session file name (e.g. `my_session.session`): ")
+        user_session_name = session_name or input("Enter your Telethon session file name: ")
 
         try:
             client = TelegramClient(user_session_name, user_api_id, user_api_hash)
@@ -282,6 +297,7 @@ class Telegram:
                     if otp:
                         print("\n―― OTP received ✅\n―― Your login code:", otp.group(0))
                         client.disconnect()
+                        sys.exit(0)
 
                 print("\n―― Please request an OTP code in your Telegram app."
                       "\n―― 📲 𝙻𝚒𝚜𝚝𝚎𝚗𝚒𝚗𝚐 𝚏𝚘𝚛 𝚒𝚗𝚌𝚘𝚖𝚒𝚗𝚐 𝙾𝚃𝙿 . . .")
@@ -289,10 +305,36 @@ class Telegram:
                     client.run_until_disconnected()
             else:
                 print("\n―― 🔴 Authorization Failed!"
-                      "\n―― Invalid Telethon session file or the session has expired.")
+                      "\n―― The session has been revoked or is invalid.")
+                sys.exit(1)
         except sqlite3.OperationalError:
-            print("\n―― ⚠️ Invalid Telethon session file. Please ensure you are using a Telethon session file.")
+            print(
+                "\n―― ❌ The provided session file could not be opened. "
+                "This issue may occur if the session file was created using a different library or is corrupted. "
+                "Please ensure that the session file is compatible with Telethon."
+            )
+            sys.exit(1)
         except telethon_errors.RPCError as e:
             print(f"\n―― ❌ An RPC error occurred: {e}")
+            sys.exit(1)
         except Exception as e:
             print(f"\n―― ❌ An unexpected error occurred: {e}")
+            sys.exit(1)
+
+
+if __name__ == "__main__":
+    commands = {
+        "--telethon": SessionManager.telethon,
+        "--pyrogram": SessionManager.pyrogram,
+        "--login": Telegram.login,
+    }
+
+    if len(sys.argv) > 1:
+        cmd = sys.argv[1]
+        action = commands.get(cmd)
+        if action:
+            action()
+        else:
+            print(f"\n―― ❌  Unknown command: `{cmd}`\n"
+                  f"――  Supported commands: {', '.join(commands.keys())}\n"
+                  f"――  Example: `python telegram.py --login`\n")
